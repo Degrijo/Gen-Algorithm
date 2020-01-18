@@ -1,4 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from time import sleep
+from queue import Queue, Empty
+from threading import Thread
 import sys
 from models import Cockroach, Snowflake, Washcloth
 from random import randint, choice

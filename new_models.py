@@ -1,7 +1,6 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
 from random import choice
 from abc import ABC
-from items import CreatureItem
+from tkinter import PhotoImage
 
 
 class Hero(ABC):  # можно сделать общую память для каждой рассы, observe возвращает словарь
@@ -296,31 +295,16 @@ class Hero(ABC):  # можно сделать общую память для к�
 class Cockroach(Hero):
     def __init__(self, x, y, gene, gen_number, parent):
         super().__init__(x, y, gene, gen_number, parent)
-        self.item = CreatureItem(self, parent.sqr_view * parent.sqr_width,
-                                 QtGui.QPen(QtGui.QColor(100, 0, 0)),
-                                 QtGui.QPixmap(r"..\pict\cockroach.png"), QtGui.QPixmap(r"..\pict\cockroach_menu.png"))
-        self.item.setOffset(self.x * self.sqr_width, self.y * self.sqr_width)
-        self.item.setTransformOriginPoint(QtCore.QPoint(self.x + self.item.pixmap().rect().width() // 2,
-                                                        self.y + self.item.pixmap().rect().height() // 2))
+        self.pict = PhotoImage(file=r"..\pict\cockroach.png")
 
 
 class Snowflake(Hero):
     def __init__(self, x, y, gene, gen_number, parent):
         super().__init__(x, y, gene, gen_number, parent)
-        self.item = CreatureItem(self, parent.sqr_view * parent.sqr_width,
-                                 QtGui.QPen(QtGui.QColor(155, 56, 217)),
-                                 QtGui.QPixmap(r"..\pict\snowflake.png"), QtGui.QPixmap(r"..\pict\snowflake_menu.png"))
-        self.item.setOffset(self.x * self.sqr_width, self.y * self.sqr_width)
-        self.item.setTransformOriginPoint(QtCore.QPoint(self.x + self.item.pixmap().rect().width() // 2,
-                                                        self.y + self.item.pixmap().rect().height() // 2))
+        self.item = PhotoImage(file=r"..\pict\snowflake.png")
 
 
 class Washcloth(Hero):
     def __init__(self, x, y, gene, gen_number, parent):
         super().__init__(x, y, gene, gen_number, parent)
-        self.item = CreatureItem(self, parent.sqr_view * parent.sqr_width,
-                                 QtGui.QPen(QtGui.QColor(220, 62, 62)),
-                                 QtGui.QPixmap(r"..\pict\washcloth.png"), QtGui.QPixmap(r"..\pict\washcloth_menu.png"))
-        self.item.setOffset(self.x * self.sqr_width, self.y * self.sqr_width)
-        self.item.setTransformOriginPoint(QtCore.QPoint(self.x + self.item.pixmap().rect().width() // 2,
-                                                        self.y + self.item.pixmap().rect().height() // 2))
+        self.pict = PhotoImage(file=r"..\pict\washcloth.png")
