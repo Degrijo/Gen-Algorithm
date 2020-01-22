@@ -1,9 +1,10 @@
 from random import choice
 from abc import ABC
 from tkinter import PhotoImage
+from random import randint
 
 
-class Hero(ABC):  # можно сделать общую память для каждой рассы, observe возвращает словарь
+class Creature(ABC):  # можно сделать общую память для каждой рассы, observe возвращает словарь
     def __init__(self, x, y, gene, gen_number, parent):  # можно добавить имя и выводить его сверху
         self.x = x  # можно сделать возможность передавать ресурсы между однорассниками с процентом
         self.y = y
@@ -109,7 +110,7 @@ class Hero(ABC):  # можно сделать общую память для к�
                 min = feach
             else:
                 print('min_path')
-                if Hero.distance(feach, (self.x, self.y)) < Hero.distance(min, (self.x, self.y)):
+                if Creature.distance(feach, (self.x, self.y)) < Creature.distance(min, (self.x, self.y)):
                     min = feach
         return min
 
@@ -121,7 +122,7 @@ class Hero(ABC):  # можно сделать общую память для к�
     def check_logistic(self):
         if self.plan[0] is not "waiting":  # при waiting потрулирование территории
             print('check_logic')
-            if Hero.distance((self.x, self.y), self.plan[1]) is 1:
+            if Creature.distance((self.x, self.y), self.plan[1]) is 1:
                 if self.plan[0] is "eating":
                     self.eat(self.plan[1])
                 elif self.plan[0] is "drinking":
@@ -291,20 +292,69 @@ class Hero(ABC):  # можно сделать общую память для к�
         inf[-1] = inf[-1][:-2]
         return ' '.join(inf)
 
-
-class Cockroach(Hero):
-    def __init__(self, x, y, gene, gen_number, parent):
-        super().__init__(x, y, gene, gen_number, parent)
-        self.pict = PhotoImage(file=r"..\pict\cockroach.png")
-
-
-class Snowflake(Hero):
-    def __init__(self, x, y, gene, gen_number, parent):
-        super().__init__(x, y, gene, gen_number, parent)
-        self.item = PhotoImage(file=r"..\pict\snowflake.png")
+    @property
+    def to_json(self):
+        return {"gene": self.gene, "gen_number": self.gen_number, "resources": self.resources, "hp": self.hp,
+                "memory": self.memory, "friends": self.friends, "turn_number": self.turn_number, "mature": self.mature,
+                "plan": self.plan}
 
 
-class Washcloth(Hero):
-    def __init__(self, x, y, gene, gen_number, parent):
-        super().__init__(x, y, gene, gen_number, parent)
-        self.pict = PhotoImage(file=r"..\pict\washcloth.png")
+# class Cockroach(Creature):
+#     def __init__(self, x, y, gene, gen_number, parent):
+#         super().__init__(x, y, gene, gen_number, parent)
+#         self.pict = PhotoImage(file=r"..\pict\cockroach.png")
+#
+#
+# class Snowflake(Creature):
+#     def __init__(self, x, y, gene, gen_number, parent):
+#         super().__init__(x, y, gene, gen_number, parent)
+#         self.pict = PhotoImage(file=r"..\pict\snowflake.png")
+#
+#
+# class Washcloth(Creature):
+#     def __init__(self, x, y, gene, gen_number, parent):
+#         super().__init__(x, y, gene, gen_number, parent)
+#         self.pict = PhotoImage(file=r"..\pict\washcloth.png")
+
+
+class Cell:
+    def __init__(self):
+        self.creatures = []
+        self.up = self.right = self.down = self.left = None
+        self.canvas_item = None
+        self.water = 0
+
+    def set_neighbors(self, up, right, down, left):
+        self.up, self.right, self.down, self.left = up, right, down, left
+
+    @property
+    def is_empty(self):
+        return True if not self.creatures else False
+
+    @property
+    def pict(self):
+        if self.water:
+            # return PhotoImage(file=rf"pict/water{randint(1, 3)}.png")
+            return '#0000C8'
+        if self.creatures:
+            return self.creatures[0].pict
+
+    @property
+    def to_json(self):
+        return {"water": self.water, "creatures": [obj.to_json for obj in self.creatures]}
+
+
+class Cockroach:
+    def __init__(self, x, y):
+        self.pict = '#640000'
+
+
+class Snowflake:
+    def __init__(self, x, y):
+        self.pict = '#9B38D9'
+
+
+class Washcloth:
+    def __init__(self, x, y):
+        self.pict = "#DC3E3E"
+
