@@ -348,13 +348,21 @@ class Cockroach:
     def __init__(self, x, y):
         self.pict = '#640000'
 
+    def turn(self):
+        print('cockroach step')
+
 
 class Snowflake:
     def __init__(self, x, y):
         self.pict = '#9B38D9'
+
+    def turn(self):
+        print('snowflake step')
 
 
 class Washcloth:
     def __init__(self, x, y):
         self.pict = "#DC3E3E"
 
+    def turn(self):
+        print('washcloth step')

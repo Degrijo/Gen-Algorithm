@@ -1,6 +1,7 @@
 import tkinter as tk
 from new_models import Cell, Cockroach, Snowflake, Washcloth
 from random import choice, randint
+from threading import Thread
 from time import sleep
 import logging
 from json import load, dump
@@ -12,6 +13,8 @@ FIELD_HEIGHT = 50
 FIELD_VIEW = 4
 SPECIES = (Cockroach, Snowflake, Washcloth)
 SPECIES_SIZE = 5
+STEP_PAUSE = 1
+STEPS_FOR_SAVING = 50
 
 current_step = 0
 game_play = False
@@ -62,19 +65,20 @@ def ui(root):
     xbar.config(command=field.xview)
     ybar.config(command=field.yview)
     root.attributes("-fullscreen", state)
+
+    def toggle_fullscreen(e):
+        nonlocal state, root
+        state = not state
+        root.attributes("-fullscreen", state)
+
+    def end_fullscreen(e):
+        nonlocal state, root
+        state = False
+        root.attributes("-fullscreen", False)
+
     root.bind("<F11>", toggle_fullscreen)
     root.bind("<Escape>", end_fullscreen)
     return field, step_var
-
-
-def toggle_fullscreen(root, state):
-    state = not state
-    root.attributes("-fullscreen", state)
-
-
-def end_fullscreen(root, state):
-    state = False
-    root.attributes("-fullscreen", False)
 
 
 def generate_creatures():
@@ -121,18 +125,21 @@ def dump_sys():
 
 def step():
     global current_step
-    shuffle_creatures()
-    for creature in creatures:
-        creature.turn()
-    current_step += 1
-    update_chart()
-    if not current_step % 50:
-        dump_sys()
-    sleep(1)
+    while 1 > 0:
+        shuffle_creatures()
+        for creature in creatures:
+            creature.turn()
+        current_step += 1
+        # update_chart()
+        if not current_step % STEPS_FOR_SAVING:
+            dump_sys()
+        sleep(STEP_PAUSE)
 
 
 if __name__ == '__main__':
     root = tk.Tk()
     field, step_var = ui(root)
     generate_creatures()
+    game_thread = Thread(target=step)
+    game_thread.start()
     root.mainloop()
