@@ -13,17 +13,16 @@ FIELD_HEIGHT = 50
 FIELD_VIEW = 4
 SPECIES = (Cockroach, Snowflake, Washcloth)
 SPECIES_SIZE = 5
+WATER_SIZE = 30
+CELL_WATER_CAPACITY = 
 STEP_PAUSE = 1
 STEPS_FOR_SAVING = 50
+INITIAL_PROCENT_RESOURCES = 0.8
 
 current_step = 0
 game_play = False
 creatures = []
-chart = [[Cell() for j in range(FIELD_HEIGHT)] for i in range(FIELD_WIDTH)]
-for i in range(FIELD_WIDTH):
-    for j in range(FIELD_HEIGHT):
-        chart[i][j].set_neighbors(chart[i][j] if not j else None, chart[i][j] if i != FIELD_WIDTH - 1 else None,
-                                  chart[i][j] if j != FIELD_HEIGHT - 1 else None, chart[i][j] if not i else None)
+chart = [[Cell(i, j) for j in range(FIELD_HEIGHT)] for i in range(FIELD_WIDTH)]
 
 
 def ui(root):
@@ -81,7 +80,7 @@ def ui(root):
     return field, step_var
 
 
-def generate_creatures():
+def generate_chart():
     global creatures, chart
     for species in SPECIES:
         for number in range(SPECIES_SIZE):
@@ -93,6 +92,13 @@ def generate_creatures():
                     chart[x][y].creatures.append(creature)
                     break
                 x, y = randint(0, FIELD_WIDTH - 1), randint(0, FIELD_HEIGHT)
+    for _ in range(WATER_SIZE):
+        x, y = randint(0, FIELD_WIDTH - 1), randint(0, FIELD_HEIGHT - 1)
+        while True:
+            if not chart[x][y].resources['water']:
+                chart[x][y].resources['water'] =
+                break
+            x, y = randint(0, FIELD_WIDTH - 1), randint(0, FIELD_HEIGHT)
     update_chart()
 
 
@@ -139,7 +145,7 @@ def step():
 if __name__ == '__main__':
     root = tk.Tk()
     field, step_var = ui(root)
-    generate_creatures()
+    generate_chart()
     game_thread = Thread(target=step)
     game_thread.start()
     root.mainloop()

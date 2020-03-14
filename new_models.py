@@ -318,14 +318,11 @@ class Creature(ABC):  # можно сделать общую память для
 
 
 class Cell:
-    def __init__(self):
+    def __init__(self, x, y):
+        self.x, self.y = x, y
         self.creatures = []
-        self.up = self.right = self.down = self.left = None
+        self.resources = {'vitamin': 0, 'meat': 0, 'plant': 0, 'water': 0}
         self.canvas_item = None
-        self.water = 0
-
-    def set_neighbors(self, up, right, down, left):
-        self.up, self.right, self.down, self.left = up, right, down, left
 
     @property
     def is_empty(self):
