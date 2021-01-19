@@ -3,9 +3,7 @@ ROW_NUMBER = 5
 COL_NUMBER = 5
 
 # Icon options
-COCKROACH_PICT = 'pict/cockroach.png'
-SNOWFLAKE_PICT = 'pict/snowflake.png'
-WASHCLOTH_PICT = 'pict/washcloth.png'
+ICONS = {'Cockroach': 'pict/cockroach.png', 'Snowflake': 'pict/snowflake.png', 'Washcloth': 'pict/washcloth.png'}
 
 # Feature options
 MIN_VALUE = 0

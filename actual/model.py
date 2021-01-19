@@ -1,7 +1,8 @@
+import itertools
 from random import randint
 from abc import ABC
 
-from constants import COCKROACH_PICT, SNOWFLAKE_PICT, WASHCLOTH_PICT, MIN_VALUE, MAX_VALUE
+from constants import MIN_VALUE, MAX_VALUE
 
 
 class Card:
@@ -55,8 +56,13 @@ class Square:
 
 
 class Beast(ABC):
+    obj_counter = 0
+
     def __init__(self):
         self.square = None
+        self.race = self.__name__
+        Beast.obj_counter += 1
+        self.id = self.obj_counter
 
     def move_top(self):
         top = self.square.top
@@ -78,11 +84,14 @@ class Beast(ABC):
         if right:
             self.square = right
 
+    @property
+    def draw_inf(self):
+        return self.square.x, self.square.y, self.race, self.id
+
 
 class Cockroach(Beast):
     def __init__(self):
         super().__init__()
-        self.pict = COCKROACH_PICT
         self.vitamins = MIN_VALUE
         self.fruits = MIN_VALUE
 
@@ -94,7 +103,6 @@ class Cockroach(Beast):
 class Snowflake(Beast):
     def __init__(self):
         super().__init__()
-        self.pict = SNOWFLAKE_PICT
         self.meat = MIN_VALUE
         self.fruits = MIN_VALUE
 
@@ -106,7 +114,6 @@ class Snowflake(Beast):
 class Washcloth(Beast):
     def __init__(self):
         super().__init__()
-        self.pict = WASHCLOTH_PICT
         self.meat = MIN_VALUE
         self.vitamins = MIN_VALUE
 

@@ -26,28 +26,24 @@ class Controller:
             for beast_type in BEAST_TYPES:
                 for _ in range(common):
                     beast = beast_type()
-                    self.beasts.append(beast)
-                    self.card.place_beast(beast)
+                    self.create_beast(beast)
             for _ in range(BEAST_NUMBER - common * beast_amount):
                 beast = choice(BEAST_TYPES)()
-                self.beasts.append(beast)
-                self.card.place_beast(beast)
+                self.create_beast(beast)
         else:
             for _ in range(BEAST_NUMBER):
                 beast = choice(BEAST_TYPES)()
-                self.beasts.append(beast)
-                self.card.place_beast(beast)
+                self.create_beast(beast)
 
-    def redraw_beasts(self):
-        for beast in self.beasts:
-            self.view.update()
+    def create_beast(self, beast):
+        self.beasts.append(beast)
+        self.card.place_beast(beast)
+        self.view.field.draw_image(beast.draw_inf)
 
     def __call__(self, *args, **kwargs):
         self.create_beasts()
-        self.view.update()
-        while True:
-            sleep(DELAY_TIME)
-            shuffle(self.beasts)
-
-            self.beasts = [beast for beast in self.beasts if death_check(beast)]  # killing beasts
-            self.view.update()  # updating ui
+        # while True:
+        #     sleep(DELAY_TIME)
+        #     shuffle(self.beasts)
+        #
+        #     self.beasts = [beast for beast in self.beasts if death_check(beast)]  # killing beasts
