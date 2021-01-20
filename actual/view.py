@@ -2,7 +2,7 @@ import tkinter as tk
 
 
 from constants import ROW_NUMBER, COL_NUMBER, ICONS
-
+# Class Item for canvas obj, View obj return field by default
 
 WIN_WIDTH = 800
 WIN_HEIGHT = 500
@@ -10,7 +10,6 @@ WIN_MIN_WIDTH = 700
 WIN_MIN_HEIGHT = 300
 FIELD_WIDTH = 1575
 FIELD_HEIGHT = 1045
-IMAGES = {tag: tk.PhotoImage(file=pict) for tag, pict in ICONS.items()}
 
 
 class View:
@@ -21,11 +20,11 @@ class View:
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
         toolbar = tk.Frame(self.root, highlightthickness=1, highlightbackground='black', width=300)
-        toolbar.grid(row=0, column=1, sticky='ns', padx=(0, 10), pady=(10, 10))
+        toolbar.grid(row=0, column=2, sticky='ns', padx=(10, 10), pady=(10, 0))
         self.field = Canvas()
         self.field.grid(row=0, column=0, sticky='nswe', padx=(10, 10), pady=(10, 10))
-        xbar = tk.Scrollbar(self.field, orient=tk.HORIZONTAL, command=self.field.xview)
-        ybar = tk.Scrollbar(self.field, command=self.field.yview)
+        xbar = tk.Scrollbar(self.root, orient=tk.HORIZONTAL, command=self.field.xview)
+        ybar = tk.Scrollbar(self.root, command=self.field.yview)
         ybar.grid(row=0, column=1, sticky='ns')
         xbar.grid(row=1, column=0, sticky='we')
         self.field.configure(xscrollcommand=xbar.set, yscrollcommand=ybar.set)
@@ -42,6 +41,13 @@ class View:
         self.state = False
         self.root.attributes("-fullscreen", False)
 
+    def set_controller(self, controller):
+        self.root.protocol("WM_DELETE_WINDOW", controller.stop)
+        self.root.bind('<space>', controller.run_pause)
+
+    def destroy(self):
+        self.root.destroy()
+
     def display(self):
         self.root.mainloop()
 
@@ -52,27 +58,33 @@ class Canvas(tk.Canvas):
                          height=FIELD_HEIGHT, scrollregion=(0, 0, FIELD_WIDTH, FIELD_HEIGHT))
         self.square_width = FIELD_WIDTH // COL_NUMBER
         self.square_height = FIELD_HEIGHT // ROW_NUMBER
+        min_value = min(self.square_width, self.square_height)
+        self.IMAGES = {tag: tk.PhotoImage(file=pict) for tag, pict in ICONS.items()}
+        for key, value in self.IMAGES.items():
+            image_width = value.width()
+            self.IMAGES[key] = value.zoom(min_value // image_width or image_width // min_value)
         for i in range(1, ROW_NUMBER):
             current_y = self.square_height * i
-            self.create_line(0, current_y, FIELD_WIDTH, current_y, width=10)
+            self.create_line(0, current_y, FIELD_WIDTH, current_y)
         for i in range(1, COL_NUMBER):
             current_x = self.square_width * i
             self.create_line(current_x, 0, current_x, FIELD_HEIGHT)
 
     def draw_image(self, x, y, race, tag):
-        self.create_image(x*self.square_width, y*self.square_height,  anchor=tk.CENTER, image=ICONS[race], tag=tag)
+        self.create_image((x + 0.5)*self.square_width, (y + 0.15)*self.square_height,
+                          anchor=tk.NE, image=self.IMAGES[race], tag=tag)
 
     def move_top(self, tag):
         self.moveto(tag, y=-self.square_height)
 
     def move_bottom(self, tag):
-        self.moveto(tag, y=+self.square_height)
-
-    def move_right(self, tag):
-        self.moveto(tag, x=self.square_width)
+        self.moveto(tag, y=self.square_height)
 
     def move_left(self, tag):
         self.moveto(tag, x=-self.square_width)
+
+    def move_right(self, tag):
+        self.moveto(tag, x=self.square_width)
 
     def delete_image(self, obj):
         self.delete(obj)

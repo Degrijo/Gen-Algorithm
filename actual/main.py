@@ -6,6 +6,8 @@ from controller import Controller
 
 if __name__ == '__main__':
     view = View()
-    logic = Thread(target=Controller(view))
+    controller = Controller(view)
+    view.set_controller(controller)
+    thread = Thread(target=controller)
+    thread.start()
     view.display()
-    logic.start()

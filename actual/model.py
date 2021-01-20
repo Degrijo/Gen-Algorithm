@@ -39,7 +39,7 @@ class Square:
         return self.card[self.x - 1, self.y]
 
     @property
-    def bot(self):
+    def bottom(self):
         return self.card[self.x + 1, self.y]
 
     @property
@@ -60,19 +60,19 @@ class Beast(ABC):
 
     def __init__(self):
         self.square = None
-        self.race = self.__name__
         Beast.obj_counter += 1
         self.id = self.obj_counter
+        self.race = ''
 
     def move_top(self):
         top = self.square.top
         if top:
             self.square = top
 
-    def move_bot(self):
-        bot = self.square.bot
-        if bot:
-            self.square = bot
+    def move_bottom(self):
+        bottom = self.square.bottom
+        if bottom:
+            self.square = bottom
 
     def move_left(self):
         left = self.square.left
@@ -86,12 +86,13 @@ class Beast(ABC):
 
     @property
     def draw_inf(self):
-        return self.square.x, self.square.y, self.race, self.id
+        return self.square.x, self.square.y, self.race, 'beast_' + str(self.id)
 
 
 class Cockroach(Beast):
     def __init__(self):
         super().__init__()
+        self.race = Cockroach.__name__
         self.vitamins = MIN_VALUE
         self.fruits = MIN_VALUE
 
@@ -103,6 +104,7 @@ class Cockroach(Beast):
 class Snowflake(Beast):
     def __init__(self):
         super().__init__()
+        self.race = Snowflake.__name__
         self.meat = MIN_VALUE
         self.fruits = MIN_VALUE
 
@@ -114,6 +116,7 @@ class Snowflake(Beast):
 class Washcloth(Beast):
     def __init__(self):
         super().__init__()
+        self.race = Washcloth.__name__
         self.meat = MIN_VALUE
         self.vitamins = MIN_VALUE
 
