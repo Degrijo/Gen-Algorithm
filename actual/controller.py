@@ -1,22 +1,13 @@
-import sys
 from random import shuffle, choice
 from time import sleep
 
-from constants import ROW_NUMBER, COL_NUMBER, DELAY_TIME, BEAST_NUMBER, EVEN_DISTRIBUTION
+from constants import ROW_NUMBER, COL_NUMBER, STEP_DELAY, BEAST_NUMBER, EVEN_DISTRIBUTION, VISIBLE_SQUARE_NUMBER
 from model import Card, BEAST_TYPES
 
 
 RUN = 0
 PAUSE = 1
 STOP = 2
-
-
-def death_check(beast):
-    if beast.is_alive:
-        return True
-    beast.square.beasts.remove(beast)
-    del beast
-    return False
 
 
 class Controller:
@@ -46,24 +37,22 @@ class Controller:
         self.beasts.append(beast)
         self.card.place_beast(beast)
         self.view.field.draw_image(*beast.draw_inf)
-        sq = beast.square
-        print(beast.id, sq.x, sq.y)
 
     def move_top(self, beast):
-        beast.move_top()
-        self.view.field.move_right('beast_' + str(beast.id))
+        if beast.move_top():
+            self.view.field.move_right(beast.id)
 
     def move_bottom(self, beast):
-        beast.move_bottom()
-        self.view.field.move_bottom('beast_' + str(beast.id))
+        if beast.move_bottom():
+            self.view.field.move_bottom(beast.id)
 
     def move_left(self, beast):
-        beast.move_left()
-        self.view.field.move_left('beast_' + str(beast.id))
+        if beast.move_left():
+            self.view.field.move_left(beast.id)
 
     def move_right(self, beast):
-        beast.move_right()
-        self.view.field.move_right('beast_' + str(beast.id))
+        if beast.move_right():
+            self.view.field.move_right(beast.id)
 
     def run_pause(self, event=None):
         self.run = RUN if self.run == PAUSE else PAUSE
@@ -72,16 +61,23 @@ class Controller:
         self.run = STOP
         self.view.destroy()
 
+    def kill_beast(self, beast):
+        if beast.is_alive:
+            return True
+        beast.square.beasts.remove(beast)
+        self.view.field.delete_image(beast.id)
+        del beast
+        return False
+
     def __call__(self, *args, **kwargs):
         self.create_beasts()
         while True:
-            sleep(DELAY_TIME)
+            sleep(STEP_DELAY)
             if self.run == RUN:
-                # shuffle(self.beasts)
+                shuffle(self.beasts)
                 for beast in self.beasts:
                     self.move_right(beast)
                     sq = beast.square
-                    print(beast.id, sq.x, sq.y)
-                self.beasts = [beast for beast in self.beasts if death_check(beast)]  # killing beasts
+                self.beasts = [beast for beast in self.beasts if self.kill_beast(beast)]
             elif self.run == STOP:
                 break

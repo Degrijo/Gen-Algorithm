@@ -9,10 +9,12 @@ ICONS = {'Cockroach': '../pict/cockroach.png',
 
 # Feature options
 MIN_VALUE = 0
+START_VALUE = 30
 MAX_VALUE = 100
+VISIBLE_SQUARE_NUMBER = 3
 
 # Time options
-DELAY_TIME = 3
+STEP_DELAY = 3
 
 # Population options
 BEAST_NUMBER = 6

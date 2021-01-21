@@ -2,7 +2,7 @@ import tkinter as tk
 
 
 from constants import ROW_NUMBER, COL_NUMBER, ICONS
-# Class Item for canvas obj, View obj return field by default
+# Class Item for canvas obj, View obj return field by default, sorted view init
 
 WIN_WIDTH = 800
 WIN_HEIGHT = 500
@@ -75,16 +75,16 @@ class Canvas(tk.Canvas):
                           anchor=tk.NE, image=self.IMAGES[race], tag=tag)
 
     def move_top(self, tag):
-        self.moveto(tag, y=-self.square_height)
+        self.move(tag, 0, -self.square_height)
 
     def move_bottom(self, tag):
-        self.moveto(tag, y=self.square_height)
+        self.move(tag, 0, self.square_height)
 
     def move_left(self, tag):
-        self.moveto(tag, x=-self.square_width)
+        self.move(tag, -self.square_width, 0)
 
     def move_right(self, tag):
-        self.moveto(tag, x=self.square_width)
+        self.move(tag, self.square_width, 0)
 
-    def delete_image(self, obj):
-        self.delete(obj)
+    def delete_image(self, tag):
+        self.delete(tag)
