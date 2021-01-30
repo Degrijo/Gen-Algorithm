@@ -1,4 +1,5 @@
 import tkinter as tk
+from time import sleep
 
 
 from constants import ROW_NUMBER, COL_NUMBER, ICONS
@@ -88,3 +89,23 @@ class Canvas(tk.Canvas):
 
     def delete_image(self, tag):
         self.delete(tag)
+
+    def attack_top(self, tag):
+        self.move(tag, 0, -self.square_height // 2)
+        sleep(1)
+        self.move(tag, 0, self.square_height // 2)
+
+    def attack_bottom(self, tag):
+        self.move(tag, 0, self.square_height // 2)
+        sleep(1)
+        self.move(tag, 0, -self.square_height // 2)
+
+    def attack_left(self, tag):
+        self.move(tag, -self.square_height // 2, 0)
+        sleep(1)
+        self.move(tag, self.square_height // 2, 0)
+
+    def attack_right(self, tag):
+        self.move(tag, self.square_height // 2, 0)
+        sleep(1)
+        self.move(tag, -self.square_height // 2, 0)

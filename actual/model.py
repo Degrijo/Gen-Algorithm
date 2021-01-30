@@ -1,7 +1,13 @@
 from random import randint
 from abc import ABC
 
-from constants import MIN_VALUE, START_VALUE, MAX_VALUE
+from constants import MIN_VALUE, START_VALUE, MAX_VALUE, START_DAMAGE, START_DEFENCE, START_VAMPIRISM, AGING_RESOURCE, \
+    AGING_HP
+# hp instead of resources
+
+PARAMS = {'hp': {'percent': False}, 'damage_min': {'percent': False}, 'vampirism': {'percent': True},
+          'damage_max': {'percent': False, 'gte': 'damage_min'}, 'defence': {'percent': False},
+          'vitamins': {'percent': False}, 'fruits': {'percent': False}, 'meat': {'percent': False}}
 
 
 class Card:
@@ -15,15 +21,23 @@ class Card:
         if 0 <= row < self.row_number and 0 <= col < self.col_number:
             return self.matrix[row][col]
 
-    def place_beast(self, beast):
+    def random_place_beast(self, beast):
         while True:
             row = randint(0, self.row_number - 1)
             col = randint(0, self.col_number - 1)
             square = self.matrix[row][col]
             if square.is_empty:
-                square.beasts.append(beast)
+                square.add_beast(beast)
                 beast.square = square
                 break
+
+    def manual_place_beast(self, beast, row, col):
+        square = self.matrix[row][col]
+        if square and square.is_empty:
+            square.add_beast(beast)
+            beast.square = square
+            return True
+        return False
 
 
 class Square:
@@ -31,7 +45,7 @@ class Square:
         self.card = card
         self.row = row
         self.col = col
-        self.beasts = []
+        self.beast = None
 
     @property
     def top(self):
@@ -51,57 +65,139 @@ class Square:
 
     @property
     def is_empty(self):
-        return not bool(self.beasts)
+        return not bool(self.beast)
 
-    def cell_value(self):
-        return
+    def remove_beast(self):
+        self.beast = None
+
+    def add_beast(self, beast):
+        self.beast = beast
 
 
 class Beast(ABC):
     obj_counter = 0
+    square = None
+    race = ''
+    features = ()
+    loot = ''
 
-    def __init__(self):
-        self.square = None
+    def __init__(self, gens):
         Beast.obj_counter += 1
         self.id = Beast.__name__ + str(self.obj_counter)
-        self.race = ''
-        self.resources = {}
+        if gens:
+            self.special_skills = {skill: gens.pop(skill) for skill in self.features}
+            self.skills = gens
+        else:
+            self.special_skills = {skill: MAX_VALUE for skill in self.features}
+            self.skills = {'hp': MAX_VALUE, 'damage_min': START_DAMAGE, 'damage_max': START_DAMAGE,
+                           'defence': START_DEFENCE, 'vampirism': START_VAMPIRISM}
+        self.special_resources = {res: START_VALUE * self.special_skills[res] for res in self.features}
+        self.resources = {'hp': self.skills['hp']}
 
     def move_top(self):
         top = self.square.top
         if top and top.is_empty:
-            self.square.beasts.remove(self)
+            self.square.remove_beast()
             self.square = top
-            self.square.beasts.append(self)
+            self.square.add_beast(self)
             return True
         return False
 
     def move_bottom(self):
         bottom = self.square.bottom
         if bottom and bottom.is_empty:
-            self.square.beasts.remove(self)
+            self.square.remove_beast()
             self.square = bottom
-            self.square.beasts.append(self)
+            self.square.add_beast(self)
             return True
         return False
 
     def move_left(self):
         left = self.square.left
         if left and left.is_empty:
-            self.square.beasts.remove(self)
+            self.square.remove_beast()
             self.square = left
-            self.square.beasts.append(self)
+            self.square.add_beast(self)
             return True
         return False
 
     def move_right(self):
         right = self.square.right
         if right and right.is_empty:
-            self.square.beasts.remove(self)
+            self.square.remove_beast()
             self.square = right
-            self.square.beasts.append(self)
+            self.square.add_beast(self)
             return True
         return False
+
+    def _attack(self, enemy):
+        damage = randint(self.skills['damage_min'], self.skills['damage_min'])
+        total_damage = self._defence(damage)
+        self.update_special_rec(enemy.loot, total_damage * self.skills['vampirism'] // 100)
+
+    def _defence(self, damage):
+        with_defence = damage - self.skills['defence']
+        if with_defence > 0:
+            hp = self.resources['hp']
+            self.update_res('hp', -with_defence)
+            if hp < with_defence:
+                return self.resources['hp']
+            else:
+                return with_defence
+        return 0
+
+    def attack_top(self):
+        top = self.square.top
+        if top and not top.is_empty and self.race != top.beast.race:
+            self._attack(top.beast)
+            return True
+        return False
+
+    def attack_bottom(self):
+        bottom = self.square.bottom
+        if bottom and not bottom.is_empty and self.race != bottom.beast.race:
+            self._attack(bottom.beast)
+            return True
+        return False
+
+    def attack_left(self):
+        left = self.square.left
+        if left and not left.is_empty and self.race != left.beast.race:
+            self._attack(left.beast)
+            return True
+        return False
+
+    def attack_right(self):
+        right = self.square.right
+        if right and not right.is_empty and self.race != right.beast.race:
+            self._attack(right.beast)
+            return True
+        return False
+
+    def aging(self):
+        for key in self.features:
+            self.update_special_rec(key, -AGING_RESOURCE)
+            if not self.special_resources[key]:
+                self.update_res('hp', AGING_HP)
+
+    def suicide(self):
+        self.square.remove_beast()
+
+    def update_res(self, res, value):
+        if self.resources[res] + value > self.skills[res]:
+            self.resources[res] = self.skills[res]
+        elif self.resources[res] + value < 0:
+            self.resources[res] = 0
+        else:
+            self.resources[res] += value
+
+    def update_special_rec(self, res, value):
+        if self.special_resources[res] + value > self.special_skills[res]:
+            self.special_resources[res] = self.special_skills[res]
+        elif self.special_resources[res] + value < 0:
+            self.special_resources[res] = 0
+        else:
+            self.special_resources[res] += value
 
     @property
     def draw_inf(self):
@@ -109,32 +205,34 @@ class Beast(ABC):
 
     @property
     def is_alive(self):
-        return not filter(lambda res: res < MIN_VALUE, self.resources.values())
-
-    @property
-    def relative_resources(self):
-        return {key: 1 - value / MAX_VALUE for key, value in self.resources.items()}
+        return bool(self.resources['hp'])
 
 
 class Cockroach(Beast):
-    def __init__(self):
-        super().__init__()
+    features = ('vitamins', 'fruits')
+    loot = 'meat'
+
+    def __init__(self, gens=None):
+        super().__init__(gens)
         self.race = Cockroach.__name__
-        self.resources = {res: START_VALUE for res in ('vitamins', 'fruits')}
 
 
 class Snowflake(Beast):
-    def __init__(self):
-        super().__init__()
+    features = ('meat', 'fruits')
+    loot = 'vitamins'
+
+    def __init__(self, gens=None):
+        super().__init__(gens)
         self.race = Snowflake.__name__
-        self.resources = {res: START_VALUE for res in ('meat', 'fruits')}
 
 
 class Washcloth(Beast):
-    def __init__(self):
-        super().__init__()
+    features = ('vitamins', 'meat')
+    loot = 'fruits'
+
+    def __init__(self, gens=None):
+        super().__init__(gens)
         self.race = Washcloth.__name__
-        self.resources = {res: START_VALUE for res in ('vitamins', 'meat')}
 
 
 BEAST_TYPES = (Cockroach, Snowflake, Washcloth)

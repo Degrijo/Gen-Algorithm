@@ -1,9 +1,10 @@
 from random import shuffle, choice
 from time import sleep
 
-from constants import ROW_NUMBER, COL_NUMBER, STEP_DELAY, BEAST_NUMBER, EVEN_DISTRIBUTION, VISIBLE_SQUARE_NUMBER
+from constants import ROW_NUMBER, COL_NUMBER, STEP_DELAY, BEAST_NUMBER, EVEN_DISTRIBUTION, ACTION_DELAY
 from model import Card, BEAST_TYPES
 
+# kill beast right now, delay before death, instant pause
 
 RUN = 0
 PAUSE = 1
@@ -35,8 +36,13 @@ class Controller:
 
     def create_beast(self, beast):
         self.beasts.append(beast)
-        self.card.place_beast(beast)
+        self.card.random_place_beast(beast)
         self.view.field.draw_image(*beast.draw_inf)
+
+    def custom_create_beast(self, beast, x, y):
+        if self.card.manual_place_beast(beast, x, y):
+            self.beasts.append(beast)
+            self.view.field.draw_image(*beast.draw_inf)
 
     def move_top(self, beast):
         if beast.move_top():
@@ -54,6 +60,30 @@ class Controller:
         if beast.move_right():
             self.view.field.move_right(beast.id)
 
+    def attack_top(self, beast):
+        if beast.attack_top():
+            self.view.field.attack_top(beast.id)
+            if not beast.is_alive:
+                self.suicide(beast)
+
+    def attack_bottom(self, beast):
+        if beast.attack_bottom():
+            self.view.field.attack_bottom(beast.id)
+            if not beast.is_alive:
+                self.suicide(beast)
+
+    def attack_left(self, beast):
+        if beast.attack_left():
+            self.view.field.attack_left(beast.id)
+            if not beast.is_alive:
+                self.suicide(beast)
+
+    def attack_right(self, beast):
+        if beast.attack_right():
+            self.view.field.attack_right(beast.id)
+            if not beast.is_alive:
+                self.suicide(beast)
+
     def run_pause(self, event=None):
         self.run = RUN if self.run == PAUSE else PAUSE
 
@@ -61,23 +91,30 @@ class Controller:
         self.run = STOP
         self.view.destroy()
 
-    def kill_beast(self, beast):
-        if beast.is_alive:
-            return True
-        beast.square.beasts.remove(beast)
+    def suicide(self, beast):
+        self.beasts.remove(beast)
+        beast.suicide()
         self.view.field.delete_image(beast.id)
-        del beast
-        return False
+
+    def aging(self, beast):
+        beast.aging()
+        if not beast.is_alive:
+            self.suicide(beast)
 
     def __call__(self, *args, **kwargs):
         self.create_beasts()
+        self.custom_create_beast(BEAST_TYPES[0](), 2, 3)
+        self.custom_create_beast(BEAST_TYPES[1](), 2, 4)
         while True:
             sleep(STEP_DELAY)
             if self.run == RUN:
                 shuffle(self.beasts)
                 for beast in self.beasts:
-                    self.move_right(beast)
-                    sq = beast.square
-                self.beasts = [beast for beast in self.beasts if self.kill_beast(beast)]
+                    sleep(ACTION_DELAY)
+                    sq = beast.square.right
+                    if not sq.is_empty and beast.race != sq.beast.race:
+                        self.attack_right(beast)
+                    else:
+                        self.move_right(beast)
             elif self.run == STOP:
                 break
