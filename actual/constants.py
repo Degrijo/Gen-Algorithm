@@ -26,8 +26,8 @@ START_VALUE = 30  # percents
 MAX_VALUE = 100
 
 # Time options
-ACTION_DELAY = 2
-STEP_DELAY = 3
+ACTION_DELAY = 0.5
+STEP_DELAY = 0.5
 
 # Population options
 BEAST_NUMBER = 6

@@ -112,9 +112,10 @@ class Controller:
                 for beast in self.beasts:
                     sleep(ACTION_DELAY)
                     sq = beast.square.right
-                    if not sq.is_empty and beast.race != sq.beast.race:
-                        self.attack_right(beast)
-                    else:
-                        self.move_right(beast)
+                    if sq:
+                        if not sq.is_empty and beast.race != sq.beast.race:
+                            self.attack_right(beast)
+                        else:
+                            self.move_right(beast)
             elif self.run == STOP:
                 break
